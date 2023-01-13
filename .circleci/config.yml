@@ -156,15 +156,15 @@ jobs:
           command: |
            aws cloudformation deploy \
             --template-file .circleci/files/backend.yml \
-            --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
             --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
             --tags project=udapeople  
       - run:
           name: Ensure front-end infrastructure exist
           command: |
            aws cloudformation deploy \
-            --template-file .circleci/files/backend.yml \
-            --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --template-file .circleci/files/frontend.yml \
+            --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
             --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
             --tags project=udapeople
       - run:
@@ -174,8 +174,7 @@ jobs:
             --query 'Reservations[*].Instances[*].PublicIpAddress' 
             --filters Name-tag:aws:cloudforation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
             --output text) >> ~/project/.circleci\ansible\inventory.txt
-            # Your code here
-            exit 1
+            
       - persist_to_workspace:
           root: ~/
           paths:
