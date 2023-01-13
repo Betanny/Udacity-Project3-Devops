@@ -135,8 +135,7 @@ jobs:
             npm audit fix --audit-level=critical --force
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
-            exit 1
-
+            
 
       - slack/notify:
           event: fail
