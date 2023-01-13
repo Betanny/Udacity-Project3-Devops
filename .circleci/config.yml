@@ -319,7 +319,8 @@ workflows:
          requires: [build-backend]
       - scan-backend:
           requires: [build-backend]
-      
+          context: slack-secrets
+
       - scan-frontend:
           requires: [build-frontend]
       # - deploy-infrastructure:
