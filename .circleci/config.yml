@@ -205,7 +205,7 @@ jobs:
             apk add --update --no-cache tar gzip ansible aws-cli
            
 
-      -  attach workspace:
+      - attach workspace:
           at: ~/
 
       - run:
