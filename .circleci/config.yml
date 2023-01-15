@@ -349,6 +349,7 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
+            sudo apt install -y tar gzip curl
             export BACKEND_IP=$(aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --filters Name=tag:aws:cloudformation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
@@ -362,13 +363,13 @@ jobs:
                 return 0
             fi
       - run:
-          name: Frontend smoke test.
+          name: Frontend smoke test
           command: |
             export URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-2.amazonaws.com/#/employees"            
-            echo ${URL} 
+            echo $URL 
             if curl -s ${URL} | grep "Welcome"
             then
-              return 1
+              return 0
             else
               return 1
             fi
