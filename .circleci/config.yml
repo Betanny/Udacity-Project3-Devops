@@ -220,7 +220,7 @@ jobs:
 
   run-migrations:
     docker:
-      - image: circleci/node:13:8:0
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
