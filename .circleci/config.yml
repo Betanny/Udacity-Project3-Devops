@@ -10,23 +10,23 @@ commands:
     parameters:
       workflow_id:
         type: string
-        default: $(CIRCLECI_WORKFLOW_ID)
-      # Add parameter here   
+        #default: $(CIRCLECI_WORKFLOW_ID)
     steps:
       - run:
           name: Destroy environments
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stackname udapeople-backend-<<parameters.workflow_id>>
+            aws cloudformation delete-stack \
+            --stack-name udapeople-backend-<<parameters.workflow_id>>
             aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
-            aws cloudformation delete-stack --stackname udapeople-backend-<<parameters.workflow_id>>
+            aws cloudformation delete-stack 
+            --stack-name udapeople-backend-<<parameters.workflow_id>>
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
       workflow_id:
         type: string
-        default: $(CIRCLECI_WORKFLOW_ID)    
     steps:
       - run:
           name: Revert migrations
@@ -351,7 +351,7 @@ jobs:
           command: |
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
-            if curl "${API_URL}/api/status" 
+            if curl "${API_URL}/api/status" | grep "ok"
             then
                 return 0
             else
@@ -364,7 +364,7 @@ jobs:
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
-              return 0
+              return 1
             else
               return 1
             fi
