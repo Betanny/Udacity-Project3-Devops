@@ -209,6 +209,17 @@ jobs:
       - run:
           name: Configure server
           command: |
+            - NODE_ENV: production
+            - ENVIRONMENT: production
+            - TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION')}}"
+            - TYPEORM_ENTITIES: "{{ lookup('env', 'TYPEORM_ENTITIES')}}"
+            - TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST')}}"
+            - TYPEORM_PORT: 5432
+            - TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME')}}"
+            - TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD')}}"
+            - TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE')}}"
+            - TYPEORM_MIGRATIONS: "{{ lookup('env', 'TYPEORM_MIGRATIONS')}}"
+            - TYPEORM_MIGRATIONS_DIR: "{{ lookup('env', 'TYPEORM_MIGRATIONS_DIR')}}"
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
       - destroy-environment:
@@ -359,6 +370,7 @@ jobs:
       - run:
           name: Frontend smoke test
           command: |
+             sudo apt-get install curl
              export URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-2.amazonaws.com/#/employees"            
              echo $URL
              if curl -s "${URL}" | grep "Welcome"; then return 0; else return 1; fi
