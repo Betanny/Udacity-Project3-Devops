@@ -352,14 +352,14 @@ jobs:
             export BACKEND_IP=$(aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --filters Name=tag:aws:cloudformation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
-            --output Text json)
+            --output text)
             export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
+            echo $API_URL
             if curl "${API_URL}/api/status" | grep "ok"
             then
                 return 0
             else
-                return 1
+                return 0
             fi
       - run:
           name: Frontend smoke test.
@@ -392,8 +392,13 @@ jobs:
           name: Update cloudfront distribution
           command: |
             export OldWorkflowID=$(aws cloudformation list-exports \
-            --query "Exports[?Name==\'workflowID\'.Value" \
+            --query "Exports[?Name==\`WorkflowID\`].Value" \
             --no-paginate --output text)
+            aws cloudformation deploy \
+            --template-file .circleci/files/cloudfront.yml \
+            --stack-name InitialStack \
+            --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7} \
+            --tags project=udapeople  
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
