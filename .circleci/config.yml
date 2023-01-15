@@ -355,13 +355,13 @@ jobs:
             --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo $API_URL
-            if curl "${API_URL}/api/status" | grep "ok"; then return 0; else return 0; fi
+            if curl -s "${API_URL}/api/status" | grep "ok"; then return 0; else return 0; fi
       - run:
           name: Frontend smoke test
           command: |
-             export URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-${AWS_DEFAULT_REGION}.amazonaws.com/#/employees"            
+             export URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-2.amazonaws.com/#/employees"            
              echo $URL
-             if curl "${URL}" | grep "Welcome"; then return 0; else return 1; fi
+             if curl -s "${URL}" | grep "Welcome"; then return 0; else return 1; fi
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
@@ -413,14 +413,32 @@ jobs:
                 aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
                 aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
               fi
-        - run:
-            name: Remove old stacks and files
-            command: |
-              if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-              then
-                # your code here
-              fi
-              
+  add-prometheus-node-exporter:
+    docker:
+      - image: python:3.7-alpine3.16
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - '2a:72:f9:bd:f4:67:f4:15:d2:1d:b2:26:d0:97:be:74:1f:28:c9:b4'
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update aws-cli tar gzip ansible nodejs npm
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Setup Prometheus Node Exporter
+          command: |
+            cd .circleci/ansible
+            cat inventory.txt
+            ansible-playbook -i inventory.txt node-exporter.yml
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+        
+
 
 workflows:
   default:
