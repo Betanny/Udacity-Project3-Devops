@@ -370,7 +370,7 @@ jobs:
       - run:
           name: Frontend smoke test
           command: |
-             sudo apt-get install curl
+             apt-get install curl
              pk update && apk add curl curl-dev bash
              export URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-2.amazonaws.com/#/employees"            
              echo $URL
