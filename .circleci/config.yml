@@ -2,7 +2,11 @@ version: 2.1
 orbs:
   slack: circleci/slack@4.12.0
   docker: circleci/docker@1.4.0
-
+  
+parameters:
+  workflow_id:
+    type: string
+    default: '${CIRCLE_WORKFLOW_ID:0:7}'
 
 commands:
   destroy-environment:
@@ -222,8 +226,13 @@ jobs:
             cat backend/.env
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/backend
+      #- destroy-environment:
+       #   workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+
            
 
       # Here's where you will add some code to rollback on failure      
