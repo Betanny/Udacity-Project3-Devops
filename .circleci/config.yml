@@ -481,7 +481,10 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
+      - build-frontend:
+          filters:
+            branches:
+              only: [test-feature-branch]
       - build-backend
       - test-frontend:
           requires: [build-frontend]
@@ -493,11 +496,12 @@ workflows:
 
       - scan-frontend:
           requires: [build-frontend]
-      - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
-              only: [test-feature-branch]
+              only: [master-branch]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+         
       - configure-infrastructure:
           requires: [deploy-infrastructure]
       - run-migrations:
