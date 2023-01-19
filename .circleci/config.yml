@@ -293,7 +293,7 @@ jobs:
           command: |
             apk add --update --no-cache tar gzip nodejs npm aws-cli 
       - restore_cache:
-          keys: [frontend-build]
+          keys: [backend-deps]
       - run:
           name: Get backend url
           command: |
@@ -335,9 +335,10 @@ jobs:
 
       - attach_workspace:
            at: ~/
+     
 
       - restore_cache:
-          keys: [backend-build]
+          keys: [backend-deps]
 
 
       - run:
