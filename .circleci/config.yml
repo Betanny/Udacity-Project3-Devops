@@ -170,10 +170,11 @@ jobs:
 
   deploy-infrastructure:
     docker:
-      - image: amazon/aws-cli
+      - image: cimg/python:3.10
       # Docker image here that supports AWS CLI
     steps:
       - checkout
+      - install_awscli
       - run: yum install -y tar gzip
           
       - run:
@@ -221,8 +222,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: 
-            - '2a:72:f9:bd:f4:67:f4:15:d2:1d:b2:26:d0:97:be:74:1f:28:c9:b4'
+          fingerprints: ["2a:72:f9:bd:f4:67:f4:15:d2:1d:b2:26:d0:97:be:74:1f:28:c9:b4"]
      
           
      
