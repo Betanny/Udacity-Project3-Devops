@@ -351,6 +351,9 @@ jobs:
             tar -C backend -czvf artifact.tar.gz .
             mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
             mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
+            export TYPEORM_MIGRATIONS_DIR=./migrations
+            export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
+            export TYPEORM_MIGRATIONS=./migrations/*.ts
             cd .circleci/ansible
             echo "Contents of inventory.txt file is ----$(cat inventory.txt)"
             ansible-playbook -i inventory.txt deploy-backend.yml
@@ -380,6 +383,7 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters Name=Name-tag:aws:cloudforation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
               --output text)
+
 
       - run:
           name: Backend smoke test.
@@ -413,6 +417,7 @@ jobs:
           name: Install dependencies
           command: |
             sudo apt install -y tar gzip curl
+            apk add --update --no-cache tar gzip nodejs npm 
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip -qq awscliv2.zip
             sudo ./aws/install
@@ -423,6 +428,8 @@ jobs:
             export OldWorkflowID=$(aws cloudformation list-exports \
             --query "Exports[?Name==\`WorkflowID\`].Value" \
             --no-paginate --output text)
+            echo "Old Wokflow ID: $OLD_WORKFLOW_ID"
+            curl https://kvdb.io/L3Gh3m4MAkXFjS584d6DEB/old_workflow_id -d "${OLD_WORKFLOW_ID}"
             aws cloudformation deploy \
             --template-file .circleci/files/cloudfront.yml \
             --stack-name InitialStack \
