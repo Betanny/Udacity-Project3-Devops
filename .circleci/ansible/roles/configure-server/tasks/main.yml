@@ -13,7 +13,7 @@
   become: yes
   apt:
     name: ['nodejs', 'npm']
-    state: latest
+    state: latest 
     update_cache: yes
 - name: install pm2
   become: yes
