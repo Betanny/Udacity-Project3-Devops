@@ -1,24 +1,48 @@
 ---
 - name: 'update and upgrade packages.'
-  become: yes
+  become: true
   apt:
     upgrade: yes
     update_cache: yes
     cache_valid_time: 86400
-- name: remove unneedded deps
-  become: yes
+- name: 'remove unneedded deps'
+  become: true
   apt:
     autoremove: yes
-- name: install deps
-  become: yes
+
+- name: 'install deps'
+  become: true
   apt:
     name: ['nodejs', 'npm']
     state: latest
     update_cache: yes
-- name: install pm2
-  become: yes
+- name: 'install pm2'
+  become: true
   npm:
     name: pm2
     global: yes
     state: latest
     production: yes
+
+- name: 'create abckend app dir'
+  file: 
+    path: ~/backend_app_dir
+    state: directory
+
+- name: 'Copy artifact to instance'
+  become: true
+  unarchive:
+    src: files/artifact.tar.gz
+    dest: home/ubuntu/backend_app_dir/artifact.tar.gz
+
+
+- name: start app
+  become: true
+  shell: |
+    cd home/ubuntu/backend_app_dir
+    tar artifact.tar.gz
+    npm install
+    npm run build
+    pm2 stop all
+    pm2 start npm -- start
+
