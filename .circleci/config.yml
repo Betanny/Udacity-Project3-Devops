@@ -420,7 +420,6 @@ jobs:
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip -qq awscliv2.zip
             sudo ./aws/install
-            apk add --update aws-cli tar gzip ansible nodejs npm
 
 
       - run:
@@ -429,8 +428,6 @@ jobs:
             export OldWorkflowID=$(aws cloudformation list-exports \
             --query "Exports[?Name==\`WorkflowID\`].Value" \
             --no-paginate --output text)
-            echo "Old Wokflow ID: $OLD_WORKFLOW_ID"
-            curl https://kvdb.io/L3Gh3m4MAkXFjS584d6DEB/old_workflow_id -d "${OLD_WORKFLOW_ID}"
             aws cloudformation deploy \
             --template-file .circleci/files/cloudfront.yml \
             --stack-name InitialStack \
