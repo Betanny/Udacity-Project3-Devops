@@ -22,7 +22,7 @@ async function bootstrap() {
   const apiVersionPrefix: string = process.env.API_VERSION || 'api';
   app.setGlobalPrefix(apiVersionPrefix);
   app.useGlobalInterceptors(new TransformInterceptor());
-  const options = new DocumentBuilder()
+  const options = new DocumentBuilder()x
     .setTitle('Glee2')
     .setDescription('Glee2 API')
     .setVersion('1.0')
