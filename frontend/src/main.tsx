@@ -15,5 +15,5 @@ ReactDOM.render(
       <Root />
     </ConnectedRouter>
   </Provider>,
-  document.getElementById('root')x,
+  document.getElementById('root'),
 );
