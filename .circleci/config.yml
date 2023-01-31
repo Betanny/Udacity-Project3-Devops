@@ -293,7 +293,7 @@ jobs:
           command: |
             apk add --update --no-cache tar gzip nodejs npm aws-cli 
       - restore_cache:
-          keys: [backend-deps]
+          keys: [frontend-build]
       - run:
           name: Get backend url
           command: |
@@ -338,7 +338,7 @@ jobs:
      
 
       - restore_cache:
-          keys: [backend-deps]
+          keys: [backend-build]
 
 
       - run:
@@ -372,8 +372,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-             apk add --update --no-cache tar gzip nodejs npm aws-cli ansible
-             sudo apt install -y tar gzip curl
+             apk add --update --no-cache curl tar gzip nodejs npm aws-cli ansible
 
 
 
