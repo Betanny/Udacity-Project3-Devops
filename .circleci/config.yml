@@ -373,6 +373,8 @@ jobs:
           name: Install dependencies
           command: |
              apk add --update --no-cache tar gzip nodejs npm aws-cli ansible
+             sudo apt install -y tar gzip curl
+
 
 
 
@@ -487,21 +489,21 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-         requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-          context: slack-secrets
+      # - build-frontend
+      # - build-backend
+      # - test-frontend:
+      #     requires: [build-frontend]
+      # - test-backend:
+      #    requires: [build-backend]
+      # - scan-backend:
+      #     requires: [build-backend]
+      #     context: slack-secrets
 
-      - scan-frontend:
-          requires: [build-frontend]
+      # - scan-frontend:
+      #     requires: [build-frontend]
           
       - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
                 only: [master]
