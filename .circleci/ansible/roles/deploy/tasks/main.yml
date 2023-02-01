@@ -34,19 +34,29 @@
     state: directory
 
 
-- name: 'Copy artifact to instance'
-  become: true
+# - name: 'Copy artifact to instance'
+#   become: true
+#   unarchive:
+#     src: files/artifact.tar.gz
+#     dest: cd backend_app_dir 
+ 
+- name: "Unarchive backend files"
   unarchive:
     src: files/artifact.tar.gz
-    dest: cd backend_app_dir
-
-
-- name: start app
+    dest: ~/backend_app_dir
+- name: "run server"
   become: true
-  shell: |
-    tar artifact.tar.gz
-    npm install
-    npm run build
-    pm2 stop all
-    pm2 start npm -- start
+  command: pm2 start npm -- start
+  args:
+    chdir: ~/backend_app_dir
+
+
+# - name: start app
+#   become: true
+#   shell: |
+#     tar artifact.tar.gz
+#     npm install
+#     npm run build
+#     pm2 stop all
+#     pm2 start npm -- start
 
