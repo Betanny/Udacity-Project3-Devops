@@ -33,11 +33,12 @@
     path: ~/backend_app_dir
     state: directory
 
+
 - name: 'Copy artifact to instance'
   become: true
   unarchive:
     src: files/artifact.tar.gz
-    dest: .
+    dest: ~/backend_app_dir
 
 
 - name: start app
