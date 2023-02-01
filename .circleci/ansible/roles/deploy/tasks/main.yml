@@ -48,7 +48,7 @@
   become: true
   command: pm2 start npm -- start
   args:
-    chdir: ~/backend_app_dir
+    chdir: /backend_app_dir
 
 
 # - name: start app
