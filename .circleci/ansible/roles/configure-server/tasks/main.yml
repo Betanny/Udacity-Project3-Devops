@@ -27,3 +27,9 @@
     state: latest
     production: yes
 
+- name: 'move env variables'
+  become: true
+  copy:
+    src: myenv.sh
+    dest: /etc/profile.d/
+
