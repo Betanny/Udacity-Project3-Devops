@@ -38,7 +38,7 @@
   become: true
   unarchive:
     src: files/artifact.tar.gz
-    dest: ~/backend_app_dir
+    dest: cd backend_app_dir
 
 
 - name: start app
