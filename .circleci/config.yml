@@ -366,13 +366,14 @@ jobs:
 
   smoke-test:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
-             apk add --update --no-cache curl tar gzip nodejs npm aws-cli ansible
+            - install_awscli
+
 
 
 
