@@ -354,22 +354,43 @@ jobs:
           keys: [backend-build]
 
 
+      # - run:
+      #     name: Deploy backend
+      #     command: |
+      #       cd backend
+      #       npm install
+      #       npm run build
+      #       cd ..
+      #       tar -C backend -czvf artifact.tar.gz .
+      #       mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
+      #       mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
+      #       export TYPEORM_MIGRATIONS_DIR=./migrations
+      #       export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
+      #       export TYPEORM_MIGRATIONS=./migrations/*.ts
+      #       cd .circleci/ansible
+      #       echo "Contents of inventory.txt file is ----$(cat inventory.txt)"
+      #       ansible-playbook -i inventory.txt deploy-backend.yml
+      - run:
+          name: Package Backend
+          command: |
+            cd backend
+            npm run build
+            tar -czf artifact.tar.gz dist/* package*
+            cd ..
+            mkdir .circleci/ansible/roles/deploy/files
+            cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
+
       - run:
           name: Deploy backend
           command: |
-            cd backend
-            npm install
-            npm run build
-            cd ..
-            tar -C backend -czvf artifact.tar.gz .
-            mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
-            mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
+            # your code here
             export TYPEORM_MIGRATIONS_DIR=./migrations
             export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
             export TYPEORM_MIGRATIONS=./migrations/*.ts
             cd .circleci/ansible
-            echo "Contents of inventory.txt file is ----$(cat inventory.txt)"
+            cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
+
 
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
