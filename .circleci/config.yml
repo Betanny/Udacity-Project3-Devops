@@ -46,6 +46,17 @@ commands:
           command: |
             python3 -m pip install --user ansible
 
+
+  
+  install_nodejs:
+    description: Install Node.js 13
+    steps:
+      - run:
+          name: Install Node.js 13
+          command: |
+            curl -fsSL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+            sudo apt install -y nodejs
+
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
@@ -332,65 +343,88 @@ jobs:
 
 
 
-  deploy-backend:
-    docker:
-      - image: python:3.7-alpine3.16
-    steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints: 
-            - '90:c7:a9:21:a3:64:2c:f3:6b:cc:40:dc:dc:e9:54:91'
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update --no-cache tar gzip nodejs npm aws-cli ansible
+  # deploy-backend:
+  #   docker:
+  #     - image: python:3.7-alpine3.16
+  #   steps:
+  #     - checkout
+  #     - add_ssh_keys:
+  #         fingerprints: 
+  #           - '90:c7:a9:21:a3:64:2c:f3:6b:cc:40:dc:dc:e9:54:91'
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           apk add --update --no-cache tar gzip nodejs npm aws-cli ansible
 
       
-      - attach_workspace:
-           at: ~/
+  #     - attach_workspace:
+  #          at: ~/
      
 
-      - restore_cache:
-          keys: [backend-build]
+  #     - restore_cache:
+  #         keys: [backend-build]
 
-
-      - run:
-          name: Deploy backend
-          command: |
-            cd backend
-            npm install
-            npm run build
-            cd ..
-            tar -C backend -czvf artifact.tar.gz .
-            mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
-            mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
-            export TYPEORM_MIGRATIONS_DIR=./migrations
-            export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
-            export TYPEORM_MIGRATIONS=./migrations/*.ts
-            cd .circleci/ansible
-            echo "Contents of inventory.txt file is ----$(cat inventory.txt)"
-            ansible-playbook -i inventory.txt deploy-backend.yml
-      # - run:
-      #     name: Package Backend
-      #     command: |
-      #       cd backend
-      #       npm run build
-      #       tar -czf artifact.tar.gz dist/* package*
-      #       cd ..
-      #       mkdir .circleci/ansible/roles/deploy/files
-      #       cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
 
       # - run:
       #     name: Deploy backend
       #     command: |
-      #       # your code here
+      #       cd backend
+      #       npm install
+      #       npm run build
+      #       cd ..
+      #       tar -C backend -czvf artifact.tar.gz .
+      #       mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
+      #       mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
       #       export TYPEORM_MIGRATIONS_DIR=./migrations
       #       export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
       #       export TYPEORM_MIGRATIONS=./migrations/*.ts
       #       cd .circleci/ansible
-      #       cat inventory.txt
+      #       echo "Contents of inventory.txt file is ----$(cat inventory.txt)"
       #       ansible-playbook -i inventory.txt deploy-backend.yml
+  deploy-backend:
+    docker:
+      # Docker image here that supports Ansible
+      - image: cimg/base:stable
+    steps:
+      # Checkout code from git
+      - checkout
+      - install_awscli
+      - install_ansible
+      - install_nodejs
+      # Add ssh keys with fingerprint
+      - add_ssh_keys:
+         fingerprints: ['90:c7:a9:21:a3:64:2c:f3:6b:cc:40:dc:dc:e9:54:91']
+      # attach workspace
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          keys: [backend-deps]
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+            cd backend
+            npm install
+      - run:
+          name: Package Backend
+          command: |
+            cd backend
+            npm run build
+            tar -czf artifact.tar.gz dist/* package*
+            cd ..
+            mkdir .circleci/ansible/roles/deploy/files
+            cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
 
+      - run:
+          name: Deploy backend
+          command: |
+            # your code here
+            export TYPEORM_MIGRATIONS_DIR=./migrations
+            export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
+            export TYPEORM_MIGRATIONS=./migrations/*.ts
+            cd .circleci/ansible
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
 
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
@@ -423,13 +457,27 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-            export BACKEND_IP=$(aws ec2 describe-instances \
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters Name=tag:aws:cloudformation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
-            --output text)
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo $API_URL
-            if curl ${API_URL}/api/status | grep "ok"; then exit 0; else exit 1; fi
+            # your code here
+            BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text)
+            export API_URL=http://${BACKEND_PUBLIC_IP}:3030
+            if curl -s $API_URL/api/status | grep "ok"
+            then
+              exit 0
+            else
+              exit 1
+            fi 
+          # name: Backend smoke test.
+          # command: |
+          #   export BACKEND_IP=$(aws ec2 describe-instances \
+          #   --query 'Reservations[*].Instances[*].PublicIpAddress' \
+          #   --filters Name=tag:aws:cloudformation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
+          #   --output text)
+          #   export API_URL="http://${BACKEND_IP}:3030"
+          #   echo $API_URL
+          #   if curl ${API_URL}/api/status | grep "ok"; then exit 0; else exit 1; fi
       - run:
           name: Frontend smoke test
           command: |

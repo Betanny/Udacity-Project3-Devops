@@ -1,62 +1,92 @@
 ---
-- name: 'update and upgrade packages.'
-  become: true
-  apt:
-    upgrade: yes
-    update_cache: yes
-    cache_valid_time: 86400
-- name: 'remove unneedded deps'
-  become: true
-  apt:
-    autoremove: yes
-- name: "Install Node.js 13"
-  shell: |
-    # Install Node.js LTS version as our base Node.js version
-    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-    sudo apt-get install -y nodejs
-
-    # Use n version manager to switch to Node.js v13.8.0
-    sudo npm install -g n
-    sudo n 13.8.0
-
-
-- name: 'install pm2'
-  become: true
-  npm:
-    name: pm2
-    global: yes
-    state: latest
-    production: yes
-
-- name: 'create abckend app dir'
-  file: 
-    path: ~/backend_app_dir
+- name: "Creates backend app directory"
+  file:
+    path: ~/backend-app
     state: directory
 
-
-# - name: 'Copy artifact to instance'
-#   become: true
-#   unarchive:
-#     src: files/artifact.tar.gz
-#     dest: cd backend_app_dir 
- 
 - name: "Unarchive backend files"
   unarchive:
-    src: files/artifact.tar.gz
-    dest: ~/backend_app_dir
-- name: "run server"
+    src: artifact.tar.gz
+    dest: ~/backend-app
+
+- name: "Installing Node Dependencies"
+  shell: |
+    cd ~/backend-app
+    npm i
+- name: "Executing Node app with PM2"
+  shell: |
+    cd ~/backend-app/dist
+    pm2 stop default
+    pm2 start main.js
+  register: execute_node
+
+- name: print message
+  debug:
+    msg: "{{ execute_node.stdout_lines }}"
+
+- name: "Configure pm2 to start as service"
   become: true
-  command: pm2 start npm -- start
-  args:
-    chdir: ./backend_app_dir
+  shell: |
+    env PATH=$PATH:/usr/local/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu
 
 
-# - name: start app
+#     - name: 'update and upgrade packages.'
 #   become: true
+#   apt:
+#     upgrade: yes
+#     update_cache: yes
+#     cache_valid_time: 86400
+# - name: 'remove unneedded deps'
+#   become: true
+#   apt:
+#     autoremove: yes
+# - name: "Install Node.js 13"
 #   shell: |
-#     tar artifact.tar.gz
-#     npm install
-#     npm run build
-#     pm2 stop all
-#     pm2 start npm -- start
+#     # Install Node.js LTS version as our base Node.js version
+#     curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+#     sudo apt-get install -y nodejs
 
+#     # Use n version manager to switch to Node.js v13.8.0
+#     sudo npm install -g n
+#     sudo n 13.8.0
+
+
+# - name: 'install pm2'
+#   become: true
+#   npm:
+#     name: pm2
+#     global: yes
+#     state: latest
+#     production: yes
+
+# - name: 'create abckend app dir'
+#   file: 
+#     path: ~/backend_app_dir
+#     state: directory
+
+
+# # - name: 'Copy artifact to instance'
+# #   become: true
+# #   unarchive:
+# #     src: files/artifact.tar.gz
+# #     dest: cd backend_app_dir 
+ 
+# - name: "Unarchive backend files"
+#   unarchive:
+#     src: files/artifact.tar.gz
+#     dest: ~/backend_app_dir
+# - name: "run server"
+#   become: true
+#   command: pm2 start npm -- start
+#   args:
+#     chdir: ./backend_app_dir
+
+
+# # - name: start app
+# #   become: true
+# #   shell: |
+# #     tar artifact.tar.gz
+# #     npm install
+# #     npm run build
+# #     pm2 stop all
+# #     pm2 start npm -- start
