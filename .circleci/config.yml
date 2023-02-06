@@ -308,7 +308,7 @@ jobs:
           command: |
             if grep -q "success" ~/project/backend/migrations_dump.txt
             then 
-              curl --insecure https://kvdb.io/L3Gh3m4MAkXFjS584d6DEB/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
+              curl --insecure https://kvdb.io/5ka1vYVxGkaLBLXFWXeB75/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
             fi
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
@@ -328,14 +328,13 @@ jobs:
           keys: [frontend-build]
       - run:
           name: Get backend url
-          command: |
-            export BACKEND_IP=$(aws ec2 describe-instances \
+          command: | 
+            BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters Name=Name-tag:aws:cloudforation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
-              --output Text)
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "API_URL = ${API_URL}"
-            echo API URL = "http://${BACKEND_IP}:3030" >> frontend/.env
+              --output text)
+            echo "API_URL=http://${BACKEND_PUBLIC_IP}:3030" >> frontend/.env
+            echo $(cat frontend/.env)
       
       - run:
           name: Deploy frontend objects
