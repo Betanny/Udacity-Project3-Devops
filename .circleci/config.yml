@@ -440,7 +440,7 @@ jobs:
              apk update && apk add curl curl-dev bash
              URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.us-west-2.amazonaws.com"            
              echo ${URL}
-             if curl -s ${URL} | grep "Welcome"; then exit 0; else exit 1; fi
+             if curl -s ${URL} | grep "Welcome"; then return 1; else return 1; fi
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
